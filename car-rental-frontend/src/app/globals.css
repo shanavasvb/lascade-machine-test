@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/* fonts */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+
+@theme {
+  --color-primary: #0a8a61;
+  --color-primary-hover: #06704f;
+  --color-bg-page: #f5f7f6;
+  --color-bg-card: #ffffff;
+  --color-text-main: #042521;
+  --color-text-muted: #647583;
+  --color-border-input: #d8e3df;
+  --font-family-inter: "Inter", sans-serif;
+  --radius-card: 24px;
+  --radius-input: 12px;
+  --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+body {
+  background-color: var(--color-bg-page);
+  font-family: var(--font-family-inter);
+  color: var(--color-text-main);
+}
+
+img {
+  object-fit: cover;
+}
+a {
+  text-decoration: none !important;
+}
+button a,
+a.inline-block,
+.no-underline-force {
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  -webkit-text-decoration-line: none !important;
+}
+
+
+@keyframes progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes road-line {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.5s ease-out;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}

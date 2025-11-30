@@ -1,0 +1,42 @@
+.rdrCalendarWrapper {
+  font-family: 'Inter', sans-serif;
+}
+
+.rdrDateDisplayWrapper {
+  background-color: #F5F7F6;
+}
+
+.rdrDayToday .rdrDayNumber span:after {
+  background: #0A8A61;
+}
+
+.rdrDay:not(.rdrDayPassive) .rdrInRange ~ .rdrDayNumber span,
+.rdrDay:not(.rdrDayPassive) .rdrStartEdge ~ .rdrDayNumber span,
+.rdrDay:not(.rdrDayPassive) .rdrEndEdge ~ .rdrDayNumber span,
+.rdrDay:not(.rdrDayPassive) .rdrSelected ~ .rdrDayNumber span {
+  color: white;
+}
+
+.rdrDayHovered .rdrDayNumber:after {
+  border-color: #0A8A61;
+}
+
+.rdrMonthAndYearPickers select {
+  color: #042521;
+  font-weight: 600;
+}
+
+.rdrNextPrevButton {
+  background: #F5F7F6;
+}
+
+.rdrNextPrevButton:hover {
+  background: #0A8A61;
+}
+
+.rdrMonthPicker select,
+.rdrYearPicker select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #D8E3DF;
+}

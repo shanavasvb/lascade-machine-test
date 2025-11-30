@@ -34,20 +34,8 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Mobile: Show a smaller version */}
-          <div className="lg:hidden flex justify-center py-8">
-            <div className="relative w-full max-w-[300px]">
-              <Image
-                src="/images/background.jpeg"
-                alt="Phone mockup with map"
-                width={300}
-                height={350}
-                className="object-contain"
-              />
-            </div>
           </div>
         </div>
-      </div>
     </section>
   );
 }

@@ -51,11 +51,7 @@ This car rental application provides a seamless experience for users to find and
 ---
 
 ## Demo Video
-
-```markdown
-![Application Demo](docs/demo-video.gif)
-
----
+![demo-video](docs/demo-video.gif)
 
 ## Features
 

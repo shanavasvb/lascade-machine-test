@@ -53,7 +53,7 @@ This car rental application provides a seamless experience for users to find and
 ## Demo Video
 
 ```markdown
-![Application Demo](demo-video.gif)
+![Application Demo](docs/demo-video.gif)
 
 ---
 

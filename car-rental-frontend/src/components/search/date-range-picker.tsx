@@ -10,23 +10,18 @@ interface DateRangePickerProps {
   startDate: Date;
   endDate: Date;
   onChange: (start: Date, end: Date) => void;
-  showCalendar: boolean;
-  onToggleCalendar: () => void;
 }
 
 export default function DateRangePicker({
   startDate,
   endDate,
   onChange,
-  showCalendar,
-  onToggleCalendar,
 }: DateRangePickerProps) {
   const pickupCalRef = useRef<HTMLDivElement>(null);
   const returnCalRef = useRef<HTMLDivElement>(null);
   const [showPickupCal, setShowPickupCal] = useState(false);
   const [showReturnCal, setShowReturnCal] = useState(false);
 
-  // Close calendars when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -157,26 +152,29 @@ export default function DateRangePicker({
         }
       `}</style>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Pickup Date */}
         <div className="relative" ref={pickupCalRef}>
+          <label className="block text-sm text-gray-600 mb-1 font-medium">
+            Pickup
+          </label>
           <button
             type="button"
             onClick={() => {
               setShowPickupCal(!showPickupCal);
               setShowReturnCal(false);
             }}
-            className="w-full pl-12 pr-4 py-3.5 border border-[var(--color-border-input)] rounded-[var(--radius-input)]
-              text-left text-[15px] text-[var(--color-text-main)]
-              hover:border-[var(--color-primary)]/50
-              focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20
-              transition-all"
+            className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-lg
+              text-left text-[15px] text-gray-900 font-medium
+              hover:border-[#0A8A61]/50
+              focus:outline-none focus:ring-2 focus:ring-[#0A8A61]/20
+              transition-all bg-white"
           >
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <div className="absolute left-4 top-[50%] -translate-y-[-10%] pointer-events-none">
               <svg
                 width="20"
                 height="20"
-                stroke="var(--color-primary)"
+                stroke="#0A8A61"
                 strokeWidth="2"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -193,7 +191,7 @@ export default function DateRangePicker({
           </button>
 
           {showPickupCal && (
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-xl border border-[var(--color-border-input)] shadow-xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 mt-2 bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden z-50">
               <DateRange
                 ranges={[
                   {
@@ -215,23 +213,26 @@ export default function DateRangePicker({
 
         {/* Return Date */}
         <div className="relative" ref={returnCalRef}>
+          <label className="block text-sm text-gray-600 mb-1 font-medium">
+            Return
+          </label>
           <button
             type="button"
             onClick={() => {
               setShowReturnCal(!showReturnCal);
               setShowPickupCal(false);
             }}
-            className="w-full pl-12 pr-4 py-3.5 border border-[var(--color-border-input)] rounded-[var(--radius-input)]
-              text-left text-[15px] text-[var(--color-text-main)]
-              hover:border-[var(--color-primary)]/50
-              focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20
-              transition-all"
+            className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-lg
+              text-left text-[15px] text-gray-900 font-medium
+              hover:border-[#0A8A61]/50
+              focus:outline-none focus:ring-2 focus:ring-[#0A8A61]/20
+              transition-all bg-white"
           >
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <div className="absolute left-4 top-[50%] -translate-y-[-10%] pointer-events-none">
               <svg
                 width="20"
                 height="20"
-                stroke="var(--color-primary)"
+                stroke="#0A8A61"
                 strokeWidth="2"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -248,7 +249,7 @@ export default function DateRangePicker({
           </button>
 
           {showReturnCal && (
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-xl border border-[var(--color-border-input)] shadow-xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 mt-2 bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden z-50">
               <DateRange
                 ranges={[
                   {

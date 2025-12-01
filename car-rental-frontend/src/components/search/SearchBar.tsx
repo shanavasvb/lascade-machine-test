@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { addDays, format } from "date-fns";
 import { useRouter } from "next/navigation";
-import { MapPin, Calendar } from "lucide-react";
 import LocationInput from "./LocationInput";
 import DateRangePicker from "./date-range-picker";
 import "react-date-range/dist/styles.css";
@@ -14,7 +13,6 @@ export default function SearchBar() {
   const [pickup, setPickup] = useState("");
   const [dropoff, setDropoff] = useState("");
   const [showDropoff, setShowDropoff] = useState(false);
-  const [showCal, setShowCal] = useState(false);
   const [priceAlert, setPriceAlert] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -43,7 +41,7 @@ export default function SearchBar() {
     params.append("pickup_location", pickup);
     
     if (showDropoff && dropoff) {
-      params.append("dropoff_location", dropoff);
+      params. append("dropoff_location", dropoff);
     }
     
     if (startDate) {
@@ -51,7 +49,7 @@ export default function SearchBar() {
     }
     
     if (endDate) {
-      params.append("dropoff_date", format(endDate, "yyyy-MM-dd"));
+      params. append("dropoff_date", format(endDate, "yyyy-MM-dd"));
     }
     
     if (priceAlert) {
@@ -63,11 +61,11 @@ export default function SearchBar() {
 
   if (!mounted || !startDate || !endDate) {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-gray-100">
         <div className="space-y-5 animate-pulse">
           <div className="h-[56px] bg-gray-100 rounded-xl" />
           <div className="h-[20px] bg-gray-100 rounded w-48" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="h-[56px] bg-gray-100 rounded-xl" />
             <div className="h-[56px] bg-gray-100 rounded-xl" />
           </div>
@@ -79,7 +77,7 @@ export default function SearchBar() {
   }
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+    <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-gray-100">
       <div className="space-y-5">
         {/* Pickup Location */}
         <div className="relative">
@@ -90,7 +88,7 @@ export default function SearchBar() {
           />
           
           {/* Connecting line */}
-          {!showDropoff && (
+          {! showDropoff && (
             <div className="absolute left-[30px] top-[62px] w-[2px] h-[18px] bg-[var(--color-primary)]/30" />
           )}
         </div>
@@ -98,7 +96,8 @@ export default function SearchBar() {
         {/* Add Different Drop Off Button */}
         <button
           onClick={() => setShowDropoff(!showDropoff)}
-className="flex items-center gap-2 text-[15px] text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-hover)] transition-colors pl-[22px]"        >
+          className="flex items-center gap-2 text-[15px] text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-hover)] transition-colors pl-[22px]"
+        >
           <div className="w-5 h-5 rounded-full border-2 border-[var(--color-primary)] flex items-center justify-center">
             <svg
               width="12"
@@ -118,7 +117,7 @@ className="flex items-center gap-2 text-[15px] text-[var(--color-primary)] font-
               )}
             </svg>
           </div>
-          {showDropoff ? "Remove Different Drop Off" : "Add Different Drop Off"}
+          {showDropoff ?  "Remove Different Drop Off" : "Add Different Drop Off"}
         </button>
 
         {/* Dropoff Location (conditional) */}
@@ -132,49 +131,12 @@ className="flex items-center gap-2 text-[15px] text-[var(--color-primary)] font-
           </div>
         )}
 
-        {/* Date Inputs */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Pickup Date */}
-          <button
-            onClick={() => setShowCal(!showCal)}
-            className="relative flex items-center gap-3 px-5 py-4 border border-gray-200 rounded-xl hover:border-[var(--color-primary)]/50 transition-all bg-white text-left"
-          >
-            <Calendar className="w-5 h-5 text-[var(--color-primary)]" />
-            <div className="flex-1">
-              <div className="text-xs text-gray-400 mb-0.5">Pickup</div>
-              <div className="text-sm font-medium text-gray-700">
-                {startDate ? format(startDate, "MMM dd, yyyy") : "Select date"}
-              </div>
-            </div>
-          </button>
-
-          {/* Return Date */}
-          <button
-            onClick={() => setShowCal(!showCal)}
-            className="relative flex items-center gap-3 px-5 py-4 border border-gray-200 rounded-xl hover:border-[var(--color-primary)]/50 transition-all bg-white text-left"
-          >
-            <Calendar className="w-5 h-5 text-[var(--color-primary)]" />
-            <div className="flex-1">
-              <div className="text-xs text-gray-400 mb-0.5">Return</div>
-              <div className="text-sm font-medium text-gray-700">
-                {endDate ? format(endDate, "MMM dd, yyyy") : "Select date"}
-              </div>
-            </div>
-          </button>
-        </div>
-
-        {/* Date Range Picker Calendar */}
-        {showCal && (
-          <div className="relative">
-            <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onChange={handleDateChange}
-              showCalendar={showCal}
-              onToggleCalendar={() => setShowCal(!showCal)}
-            />
-          </div>
-        )}
+        {/* Date Range Picker - Shows both Pickup and Return dates */}
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={handleDateChange}
+        />
 
         {/* Price Alert Checkbox */}
         <label className="flex items-center gap-3 cursor-pointer group">
@@ -182,7 +144,7 @@ className="flex items-center gap-2 text-[15px] text-[var(--color-primary)] font-
             <input
               type="checkbox"
               checked={priceAlert}
-              onChange={(e) => setPriceAlert(e.target.checked)}
+              onChange={(e) => setPriceAlert(e. target.checked)}
               className="w-5 h-5 rounded border-2 border-gray-300 checked:border-[var(--color-primary)] checked:bg-[var(--color-primary)] cursor-pointer appearance-none transition-all"
             />
             {priceAlert && (

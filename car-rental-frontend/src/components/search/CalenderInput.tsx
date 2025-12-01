@@ -78,7 +78,7 @@ export default function CalendarInput({
         </span>
       </button>
 
-      {/* Label (optional - can be rendered outside) */}
+      {/* Label */}
       {label && (
         <span className="absolute -top-2 left-3 px-1 bg-[var(--color-bg-card)] text-xs text-[var(--color-text-muted)]">
           {label}

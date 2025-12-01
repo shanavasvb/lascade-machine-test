@@ -17,9 +17,10 @@ export default function Hero() {
               </h1>
             </div>
 
-           {/* Search Bar Component */}
+            {/* Search Bar Component */}
             <SearchBar />
-              </div>
+          </div>
+
           {/* Right side - Phone Mockup with Background */}
           <div className="relative hidden lg:flex items-center justify-center min-h-[600px]">
             <div className="relative w-full h-full flex items-center justify-center">
@@ -33,9 +34,8 @@ export default function Hero() {
               />
             </div>
           </div>
-
-          </div>
         </div>
+      </div>
     </section>
   );
 }

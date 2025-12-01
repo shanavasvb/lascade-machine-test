@@ -71,25 +71,15 @@ a.inline-block,
   }
 }
 
-@keyframes slide-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
+@keyframes progress-bar {
+  0% {
+    transform: translateX(-100%);
   }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+  100% {
+    transform: translateX(100%);
   }
 }
 
-.animate-slide-in-left {
-  animation: slide-in-left 0.5s ease-out;
-}
-
-.animation-delay-200 {
-  animation-delay: 0.2s;
-}
-
-.animation-delay-400 {
-  animation-delay: 0.4s;
+.animate-progress-bar {
+  animation: progress-bar 1. 5s ease-in-out infinite;
 }

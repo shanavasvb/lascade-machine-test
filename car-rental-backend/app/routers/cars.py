@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, String
 from app.database import SessionLocal
 from app.models.car import Car
 from app.models.price import CarPrice
-from app.models. agency import Agency
+from app.models.agency import Agency
 from app.models.provider import Provider
+import json
 
 router = APIRouter(prefix="/cars", tags=["cars"])
 
@@ -14,7 +15,25 @@ def get_db():
     try:
         yield db
     finally:
-        db. close()
+        db.close()
+
+
+def extract_address_from_pickup(pickup_data):
+    """Extract address string from pickup JSON data"""
+    if not pickup_data:
+        return ""
+    
+    # If it's a string, parse it
+    if isinstance(pickup_data, str):
+        try:
+            pickup_dict = json.loads(pickup_data)
+        except:
+            return pickup_data
+    else:
+        pickup_dict = pickup_data
+    
+    # Get address field
+    return pickup_dict.get('address', '') if isinstance(pickup_dict, dict) else ""
 
 
 @router.get("/")
@@ -40,114 +59,130 @@ async def get_cars(
         # Base query
         query = (
             db.query(Car, CarPrice, Agency, Provider)
-            . join(CarPrice, Car.id == CarPrice.car_id)
+            .join(CarPrice, Car.id == CarPrice.car_id)
             .join(Agency, Agency.id == CarPrice.agency_id)
-            .join(Provider, Provider.id == CarPrice. provider_id)
+            .join(Provider, Provider.id == CarPrice.provider_id)
         )
 
-        # Only apply price filter if explicitly set (not default values)
+        # Price filters
         if min_price > 0:
             query = query.filter(CarPrice.price >= min_price)
         
         if max_price < 999999:
             query = query.filter(CarPrice.price <= max_price)
 
-        # Filter by pickup location - IMPROVED SEARCH
+        # ✅ FIXED: Filter by pickup location using JSON field
         if pickup_location:
             import re
-            # Split search term by spaces, dashes, commas, plus signs
-            search_terms = re.split(r'[\s\-,+]+', pickup_location.strip())
-            # Remove empty strings and short terms (less than 3 chars)
-            search_terms = [term for term in search_terms if len(term) > 2]
             
-            if search_terms:
-                # Match if ANY of the terms is found in pickup_location
-                location_filters = [
-                    CarPrice.pickup_location.ilike(f"%{term}%") 
-                    for term in search_terms
-                ]
-                query = query.filter(or_(*location_filters))
+            print(f"🔍 User searching for: '{pickup_location}'")
+            
+            # Get all results first, then filter in Python
+            # This is necessary because we need to parse JSON
+            all_results = query.all()
+            
+            # Normalize search term
+            search_term = pickup_location.strip().lower()
+            
+            # Extract search keywords
+            search_keywords = re.split(r'[\s\-,+]+', search_term)
+            search_keywords = [k for k in search_keywords if len(k) >= 2]
+            
+            # Remove stop words
+            stop_words = ['airport', 'downtown', 'city', 'center', 'centre', 'station', 'the', 'at', 'in']
+            search_keywords = [k for k in search_keywords if k not in stop_words]
+            
+            print(f"🔍 Search keywords: {search_keywords}")
+            
+            # Filter results by checking pickup JSON
+            filtered_results = []
+            for car, price, agency, provider in all_results:
+                pickup_address = extract_address_from_pickup(price.pickup)
+                pickup_address_lower = pickup_address.lower()
                 
-                # Debug logging
-                print(f"🔍 Searching for location terms: {search_terms}")
-        
-        # Filter by dropoff location
-        if dropoff_location:
-            import re
-            search_terms = re.split(r'[\s\-,+]+', dropoff_location.strip())
-            search_terms = [term for term in search_terms if len(term) > 2]
+                # Check if ANY keyword matches the address
+                if any(keyword in pickup_address_lower for keyword in search_keywords):
+                    filtered_results.append((car, price, agency, provider))
             
-            if search_terms:
-                location_filters = [
-                    CarPrice.pickup_location.ilike(f"%{term}%") 
-                    for term in search_terms
-                ]
-                query = query.filter(or_(*location_filters))
-        
-        # Filter by car type (can be comma-separated)
-        if car_type:
-            car_types = [ct.strip() for ct in car_type.split(',')]
-            query = query.filter(Car.type.in_(car_types))
-        
-        # Filter by category (can be comma-separated)
-        if category:
-            categories = [c.strip() for c in category.split(',')]
-            query = query.filter(Car.category.in_(categories))
+            print(f"✅ Found {len(filtered_results)} cars matching location")
+            
+            # Replace query results with filtered results
+            results = filtered_results
+            total_count = len(filtered_results)
+            
+            # Handle pagination manually
+            paginated_results = results[offset:offset + limit]
+            
+        else:
+            # No location filter - continue with normal query
+            
+            # Filter by car type (can be comma-separated)
+            if car_type:
+                car_types = [ct.strip() for ct in car_type.split(',')]
+                query = query.filter(Car.type.in_(car_types))
+            
+            # Filter by category (can be comma-separated)
+            if category:
+                categories = [c.strip() for c in category.split(',')]
+                query = query.filter(Car.category.in_(categories))
 
-        # Filter by fuel (can be comma-separated)
-        if fuel:
-            fuels = [f.strip() for f in fuel. split(',')]
-            query = query.filter(Car.fuel.in_(fuels))
-        
-        # Filter by agency (can be comma-separated)
-        if agency:
-            agencies = [a.strip() for a in agency.split(',')]
-            query = query.filter(Agency.name.in_(agencies))
-        
-        # Filter by free cancellation
-        if free_cancellation is not None:
-            query = query.filter(CarPrice.free_cancellation == free_cancellation)
-        
-        # Filter by unlimited mileage
-        if unlimited_mileage is not None:
-            query = query. filter(CarPrice.unlimited_mileage == unlimited_mileage)
+            # Filter by fuel (can be comma-separated)
+            if fuel:
+                fuels = [f.strip() for f in fuel.split(',')]
+                query = query.filter(Car.fuel.in_(fuels))
+            
+            # Filter by agency (can be comma-separated)
+            if agency:
+                agencies = [a.strip() for a in agency.split(',')]
+                query = query.filter(Agency.name.in_(agencies))
+            
+            # Filter by free cancellation
+            if free_cancellation is not None:
+                query = query.filter(CarPrice.free_cancellation == free_cancellation)
+            
+            # Filter by unlimited mileage
+            if unlimited_mileage is not None:
+                query = query.filter(CarPrice.unlimited_mileage == unlimited_mileage)
 
-        # Sorting
-        if sort_by == "price_asc":
-            query = query.order_by(CarPrice. price.asc())
-        elif sort_by == "price_desc":
-            query = query.order_by(CarPrice.price. desc())
-        elif sort_by == "rating":
-            query = query.order_by(Agency. rating.desc())
-        elif sort_by == "name":
-            query = query.order_by(Car.name.asc())
+            # Sorting
+            if sort_by == "price_asc":
+                query = query.order_by(CarPrice.price.asc())
+            elif sort_by == "price_desc":
+                query = query.order_by(CarPrice.price.desc())
+            elif sort_by == "rating":
+                query = query.order_by(Agency.rating.desc())
+            elif sort_by == "name":
+                query = query.order_by(Car.name.asc())
 
-        # Get total count before pagination
-        total_count = query.count()
-        
-        if total_count == 0:
-            return {
-                "page": page,
-                "limit": limit,
-                "count": 0,
-                "total_pages": 0,
-                "results": []
-            }
-        
-        # Get paginated results
-        results = query.offset(offset).limit(limit).all()
+            # Get total count before pagination
+            total_count = query.count()
+            
+            if total_count == 0:
+                return {
+                    "page": page,
+                    "limit": limit,
+                    "count": 0,
+                    "total_pages": 0,
+                    "results": []
+                }
+            
+            # Get paginated results
+            paginated_results = query.offset(offset).limit(limit).all()
 
         # Format response
         response = []
-        for car, price, agency, provider in results:
+        for car, price, agency, provider in paginated_results:
+            # Extract pickup info
+            pickup_address = extract_address_from_pickup(price.pickup)
+            
             response.append({
                 "car": {
                     "id": car.id,
-                    "name": car. name,
+                    "name": car.name,
                     "type": car.type,
                     "category": car.category,
                     "fuel": car.fuel,
-                    "transmission": car. transmission,
+                    "transmission": car.transmission,
                     "image": car.image,
                     "passengers": car.passengers,
                     "bags": car.bags,
@@ -160,13 +195,13 @@ async def get_cars(
                     "rating": float(agency.rating) if agency.rating else 0,
                 },
                 "provider": {
-                    "name": provider. name,
+                    "name": provider.name,
                     "logo": provider.logo,
                 },
-                "price": float(price. price),
-                "pickup_location": price.pickup_location or '',
-                "latitude": float(price.latitude) if price.latitude else None,
-                "longitude": float(price.longitude) if price. longitude else None,
+                "price": float(price.price),
+                "pickup_location": pickup_address,
+                "latitude": price.pickup.get('latitude') if isinstance(price.pickup, dict) else None,
+                "longitude": price.pickup.get('longitude') if isinstance(price.pickup, dict) else None,
                 "fuel_policy": price.fuel_policy,
                 "free_cancellation": price.free_cancellation,
                 "unlimited_mileage": price.unlimited_mileage,
@@ -196,7 +231,7 @@ async def get_car_by_id(car_id: int, db: Session = Depends(get_db)):
             db.query(Car, CarPrice, Agency, Provider)
             .join(CarPrice, Car.id == CarPrice.car_id)
             .join(Agency, Agency.id == CarPrice.agency_id)
-            . join(Provider, Provider.id == CarPrice.provider_id)
+            .join(Provider, Provider.id == CarPrice.provider_id)
             .filter(Car.id == car_id)
             .first()
         )
@@ -205,10 +240,12 @@ async def get_car_by_id(car_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Car not found")
 
         car, price, agency, provider = result
+        
+        pickup_address = extract_address_from_pickup(price.pickup)
 
         return {
             "car": {
-                "id": car. id,
+                "id": car.id,
                 "name": car.name,
                 "type": car.type,
                 "category": car.category,
@@ -216,7 +253,7 @@ async def get_car_by_id(car_id: int, db: Session = Depends(get_db)):
                 "transmission": car.transmission,
                 "image": car.image,
                 "passengers": car.passengers,
-                "bags": car. bags,
+                "bags": car.bags,
                 "sipp": car.sipp,
             },
             "agency": {
@@ -230,10 +267,10 @@ async def get_car_by_id(car_id: int, db: Session = Depends(get_db)):
                 "logo": provider.logo,
             },
             "price": float(price.price),
-            "pickup_location": price.pickup_location or '',
-            "latitude": float(price.latitude) if price.latitude else None,
-            "longitude": float(price.longitude) if price.longitude else None,
-            "fuel_policy": price. fuel_policy,
+            "pickup_location": pickup_address,
+            "latitude": price.pickup.get('latitude') if isinstance(price.pickup, dict) else None,
+            "longitude": price.pickup.get('longitude') if isinstance(price.pickup, dict) else None,
+            "fuel_policy": price.fuel_policy,
             "free_cancellation": price.free_cancellation,
             "unlimited_mileage": price.unlimited_mileage,
         }

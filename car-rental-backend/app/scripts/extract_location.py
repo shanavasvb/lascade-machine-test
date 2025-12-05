@@ -5,35 +5,35 @@ from collections import OrderedDict
 def clean_location_name(address):
     """Extract clean city, state from various address formats"""
     
-    # Remove extra whitespace, newlines, and special characters
     address = ' '.join(address.split())
-    address = address.replace('\n', ' '). replace('\r', '')
-    
-    # Pattern 1: "City, County, State" format
+    address = address.replace('\n', ' ').replace('\r', '')
+
+    # Pattern 1: "City, County, State"
     match = re.search(r',\s*([A-Za-z\s]+),\s*[A-Za-z\s]+,\s*([A-Za-z]+)', address)
     if match:
-        city = match.group(1).strip(). title()
-        state = match. group(2).strip()
-        # Convert state name to abbreviation if needed
+        city = match.group(1).strip().title()
+        state = match.group(2).strip()
+
+        state_map = {
+            'Nevada': 'NV', 'California': 'CA', 'Arizona': 'AZ',
+            'Texas': 'TX', 'Florida': 'FL', 'New York': 'NY'
+        }
         if len(state) > 2:
-            state_map = {
-                'Nevada': 'NV', 'California': 'CA', 'Arizona': 'AZ',
-                'Texas': 'TX', 'Florida': 'FL', 'New York': 'NY'
-            }
-            state = state_map.get(state, state[:2]. upper())
+            state = state_map.get(state, state[:2].upper())
+
         return f"{city}, {state}"
-    
-    # Pattern 2: "LAS VEGAS, NV" format
-    match = re.search(r'([A-Z][A-Za-z\s]+),\s*([A-Z]{2})(? :,|\s|$)', address)
+
+    # Pattern 2: "LAS VEGAS, NV"
+    match = re.search(r'([A-Z][A-Za-z\s]+),\s*([A-Z]{2})(?=,|\s|$)', address)
     if match:
         city = match.group(1).strip().title()
-        state = match.group(2).strip(). upper()
+        state = match.group(2).strip().upper()
         return f"{city}, {state}"
-    
+
     # Pattern 3: Contains "Las Vegas"
     if 'las vegas' in address.lower():
         return "Las Vegas, NV"
-    
+
     return None
 
 def extract_locations_from_json(json_file_path):

@@ -22,7 +22,7 @@ export default function FilterSidebar({
 
   // Multiple car types
   const [selectedCarTypes, setSelectedCarTypes] = useState<string[]>(
-    activeFilters.car_type ?  [activeFilters.car_type] : []
+    activeFilters.car_type ? [activeFilters.car_type] : []
   );
 
   // Multiple categories
@@ -32,23 +32,23 @@ export default function FilterSidebar({
 
   // Multiple fuel types
   const [selectedFuelTypes, setSelectedFuelTypes] = useState<string[]>(
-    activeFilters.fuel ?  [activeFilters.fuel] : []
+    activeFilters.fuel ? [activeFilters.fuel] : []
   );
 
   // Multiple agencies
   const [selectedAgencies, setSelectedAgencies] = useState<string[]>(
-    activeFilters.agency ? [activeFilters. agency] : []
+    activeFilters.agency ? [activeFilters.agency] : []
   );
 
   const handleCarTypeToggle = (type: string) => {
     const updated = selectedCarTypes.includes(type)
-      ? selectedCarTypes. filter((t) => t !== type)
+      ? selectedCarTypes.filter((t) => t !== type)
       : [...selectedCarTypes, type];
     
     setSelectedCarTypes(updated);
     onFilterChange({
       ...activeFilters,
-      car_type: updated. length > 0 ? updated. join(",") : undefined,
+      car_type: updated.length > 0 ? updated.join(",") : undefined,
       page: 1,
     });
   };
@@ -73,8 +73,8 @@ export default function FilterSidebar({
     
     setSelectedFuelTypes(updated);
     onFilterChange({
-      ... activeFilters,
-      fuel: updated.length > 0 ?  updated.join(",") : undefined,
+      ...activeFilters,
+      fuel: updated.length > 0 ? updated.join(",") : undefined,
       page: 1,
     });
   };
@@ -87,7 +87,7 @@ export default function FilterSidebar({
     setSelectedAgencies(updated);
     onFilterChange({
       ...activeFilters,
-      agency: updated. length > 0 ? updated. join(",") : undefined,
+      agency: updated.length > 0 ? updated.join(",") : undefined,
       page: 1,
     });
   };
@@ -96,7 +96,7 @@ export default function FilterSidebar({
     onFilterChange({
       ...activeFilters,
       min_price: priceRange.min,
-      max_price: priceRange. max,
+      max_price: priceRange.max,
       page: 1,
     });
   };
@@ -104,11 +104,12 @@ export default function FilterSidebar({
   const handleToggleChange = (key: "unlimited_mileage") => {
     onFilterChange({
       ...activeFilters,
-      [key]: ! activeFilters[key],
+      [key]: !activeFilters[key],
       page: 1,
     });
   };
 
+  // ✅ FIX: Preserve pickup and dropoff locations when clearing filters
   const clearAllFilters = () => {
     setPriceRange({
       min: filters.price_range.min,
@@ -118,7 +119,14 @@ export default function FilterSidebar({
     setSelectedCategories([]);
     setSelectedFuelTypes([]);
     setSelectedAgencies([]);
-    onFilterChange({ page: 1, limit: 12 });
+    
+    // ✅ Keep location data intact
+    onFilterChange({ 
+      page: 1, 
+      limit: 12,
+      pickup_location: activeFilters.pickup_location,
+      dropoff_location: activeFilters.dropoff_location,
+    });
   };
 
   return (
@@ -161,7 +169,7 @@ export default function FilterSidebar({
                 <label key={category} className="flex items-center gap-3 cursor-pointer group">
                   <input
                     type="checkbox"
-                    checked={selectedCategories. includes(category)}
+                    checked={selectedCategories.includes(category)}
                     onChange={() => handleCategoryToggle(category)}
                     className="w-4 h-4 rounded border-2 border-gray-300 accent-[var(--color-primary)] cursor-pointer"
                   />
@@ -194,36 +202,37 @@ export default function FilterSidebar({
         </FilterSection>
 
         {/* Agencies */}
-<FilterSection title="Rental Agencies">
-  <div className="space-y-2">
-    {filters.agencies.map((agency, index) => (
-      <label 
-        key={`${agency.name}-${agency.code || index}`} 
-        className="flex items-center gap-3 cursor-pointer group"
-      >
-        <input
-          type="checkbox"
-          checked={selectedAgencies.includes(agency.name)}
-          onChange={() => handleAgencyToggle(agency.name)}
-          className="w-4 h-4 rounded border-2 border-gray-300 accent-[var(--color-primary)] cursor-pointer"
-        />
-        <div className="flex items-center gap-2 flex-1">
-          <div className="relative w-6 h-6">
-            <Image
-              src={agency.logo}
-              alt={agency.name}
-              fill
-              className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
-            />
+        <FilterSection title="Rental Agencies">
+          <div className="space-y-2">
+            {filters.agencies.map((agency, index) => (
+              <label 
+                key={`${agency.name}-${agency.code || index}`} 
+                className="flex items-center gap-3 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedAgencies.includes(agency.name)}
+                  onChange={() => handleAgencyToggle(agency.name)}
+                  className="w-4 h-4 rounded border-2 border-gray-300 accent-[var(--color-primary)] cursor-pointer"
+                />
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="relative w-6 h-6">
+                    <Image
+                      src={agency.logo}
+                      alt={agency.name}
+                      fill
+                      className="object-contain opacity-60 group-hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                  <span className="text-[14px] text-[var(--color-text-main)] group-hover:text-[var(--color-primary)] transition-colors">
+                    {agency.name}
+                  </span>
+                </div>
+              </label>
+            ))}
           </div>
-          <span className="text-[14px] text-[var(--color-text-main)] group-hover:text-[var(--color-primary)] transition-colors">
-            {agency.name}
-          </span>
-        </div>
-      </label>
-    ))}
-  </div>
-</FilterSection>
+        </FilterSection>
+
         {/* Price Range */}
         <FilterSection title="Price Range">
           <div className="space-y-4">
@@ -239,7 +248,7 @@ export default function FilterSidebar({
               <input
                 type="number"
                 value={priceRange.max}
-                onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target. value) })}
+                onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
                 placeholder="Max"
               />

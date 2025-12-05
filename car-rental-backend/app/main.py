@@ -6,7 +6,7 @@ from app.scripts.seed_data import seed_database
 from app.scripts.create_tables import create_tables
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables (.env for local, Render injects automatically)
 load_dotenv()
 
 app = FastAPI(
@@ -15,10 +15,22 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Get CORS origins from environment
-cors_origins = os.getenv("CORS_ORIGINS"). split(",")
+#  CORS CONFIGURATION (FIXED)
+cors_env = os.getenv("CORS_ORIGINS")
 
-# CORS - Allow frontend to access
+if cors_env:
+    # Split by comma and strip whitespaces
+    cors_origins = [c.strip() for c in cors_env.split(",")]
+else:
+    # Default origins for local + Vercel production
+    cors_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://lascade-machine-test.vercel.app",
+    ]
+
+print("Using CORS origins:", cors_origins)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -27,10 +39,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# ROUTERS
 app.include_router(cars.router)
 app.include_router(filters.router)
+app.include_router(location.router)
 
+
+# BASE ROUTES
 @app.get("/")
 def read_root():
     return {
@@ -40,12 +55,8 @@ def read_root():
         "docs": "/docs"
     }
 
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
-@app.get("/seed")
-def run_seed():
-    create_tables()
-    seed_database()
-    return {"message": "Database seeded on Render!"}

@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.routers import cars, filters
+from scripts.seed_data import seed_database
+from scripts.create_tables import create_tables
 
 # Load environment variables
 load_dotenv()
@@ -42,3 +44,8 @@ def read_root():
 def health_check():
     return {"status": "healthy"}
 
+@app.get("/seed")
+def run_seed():
+    create_tables()
+    seed_database()
+    return {"message": "Database seeded on Render!"}

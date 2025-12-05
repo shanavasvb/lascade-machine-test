@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import cars, filters, location
 from app.scripts.seed_data import seed_database
 from app.scripts.create_tables import create_tables
+from dotenv import load_dotenv
+
 # Load environment variables
 load_dotenv()
 

@@ -1,22 +1,20 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy. orm import sessionmaker
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Force load using absolute path
+ENV_PATH = "/home/shanavas/Documents/Lascade-Machine-test/car-rental-backend/.env"
+load_dotenv(ENV_PATH)
 
-# Get database URL from environment variable
 DATABASE_URL = os.getenv("DATABASE_URL")
+print("Loaded DATABASE_URL =", DATABASE_URL)  # DEBUG LINE
 
-# Create engine
 engine = create_engine(DATABASE_URL)
 
-# Create session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base class for models
 Base = declarative_base()
 
 def get_db():

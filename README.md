@@ -25,6 +25,7 @@ A modern, full-stack car rental platform built with **Next.js 16** and **FastAPI
 - [Tech Stack](#tech-stack)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+- [Database Setup](#database-setup)
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
 - [Project Structure](#project-structure)
@@ -169,7 +170,46 @@ git clone https://github.com/shanavasvb/lascade-machine-test.git
 cd lascade-machine-test
 ```
 
-### Step 2: Database Setup
+### Step 2: Backend Setup
+
+```bash
+# Navigate to backend directory
+cd car-rental-backend
+
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# For Linux/Mac:
+source venv/bin/activate
+
+# For Windows:
+venv\Scripts\activate
+
+# You should see (venv) in your terminal
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### Step 3: Frontend Setup
+
+```bash
+# Open a new terminal and navigate to frontend directory
+cd car-rental-frontend
+
+# Install dependencies
+npm install
+```
+
+---
+
+## Database Setup
+
+You can run this project using either a **local PostgreSQL instance** or a **remote PostgreSQL database** (like Render).
+
+### Option A: Local PostgreSQL Setup
 
 #### For Linux/Mac:
 
@@ -210,38 +250,24 @@ GRANT ALL PRIVILEGES ON DATABASE car_rental TO car_rental_user;
 \q
 ```
 
-### Step 3: Backend Setup
+### Option B: Remote PostgreSQL (Render - Recommended for Production)
 
-```bash
-# Navigate to backend directory
-cd car-rental-backend
+1. **Create a PostgreSQL instance on Render:**
+   - Go to [Render Dashboard](https://dashboard.render.com/)
+   - Create a new PostgreSQL database
+   - Copy the **External Database URL**
 
-# Create virtual environment
-python3 -m venv venv
+2. **The URL format will be:**
+   ```
+   postgresql://user:password@host:port/database?sslmode=require
+   ```
 
-# Activate virtual environment
-# For Linux/Mac:
-source venv/bin/activate
+3. **Update your backend `.env` file** (see Configuration section below)
 
-# For Windows:
-venv\Scripts\activate
-
-# You should see (venv) in your terminal
-
-# Upgrade pip and install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### Step 4: Frontend Setup
-
-```bash
-# Open a new terminal and navigate to frontend directory
-cd car-rental-frontend
-
-# Install dependencies
-npm install
-```
+4. **Ensure `python-dotenv` is installed:**
+   ```bash
+   pip install python-dotenv
+   ```
 
 ---
 
@@ -256,6 +282,8 @@ cp .env.example .env
 ```
 
 **2. Edit `.env` file with your settings:**
+
+#### For Local PostgreSQL:
 ```env
 # Database Configuration
 DATABASE_URL=postgresql://car_rental_user:your_secure_password@localhost:5432/car_rental
@@ -273,18 +301,58 @@ ENVIRONMENT=development
 DEBUG=True
 ```
 
-**3. Seed the database:**
+#### For Render PostgreSQL:
+```env
+# Database Configuration (use the External Database URL from Render)
+DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
+
+# API Configuration
+API_HOST=0.0.0.0
+API_PORT=8000
+API_RELOAD=True
+
+# CORS Settings
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Environment
+ENVIRONMENT=development
+DEBUG=True
+```
+
+**3. Create database tables:**
+
+Before seeding data, you MUST create the database tables.
+
 ```bash
-# Make sure virtual environment is activated and you're in car-rental-backend/
-python scripts/seed_data.py
+# Make sure you're in car-rental-backend/ with venv activated
+python3 create_tables.py
 ```
 
 Expected output:
 ```
-✓ Database tables created successfully
-✓ Seeded X cars, Y agencies, Z providers
-✓ Database seeded successfully!
+Creating tables...
+Tables created successfully!
 ```
+
+**4. Seed the database:**
+
+The seed script loads **868+ cars, agencies, providers, and pricing data** from `car-results.json`.
+
+```bash
+# Make sure virtual environment is activated and you're in car-rental-backend/
+python3 seed_data.py
+```
+
+Expected output:
+```
+Found 868 results in JSON.
+Inserted 50 records...
+Inserted 100 records...
+...
+Seeding completed successfully!
+```
+
+> **Note:** The seed script includes fallback values to handle missing fields in the JSON data (like missing logos or fuel policies).
 
 ### Frontend Configuration
 
@@ -368,6 +436,42 @@ You should see the car rental homepage with a search form ready to use!
 
 ---
 
+## Verifying Database Setup
+
+After seeding, verify the data was loaded correctly:
+
+### For Local PostgreSQL:
+```bash
+sudo -u postgres psql -d car_rental
+
+# Check record counts
+SELECT COUNT(*) FROM cars;
+SELECT COUNT(*) FROM agencies;
+SELECT COUNT(*) FROM providers;
+SELECT COUNT(*) FROM car_price;
+
+# Exit
+\q
+```
+
+### For Render PostgreSQL:
+```bash
+psql "$DATABASE_URL"
+
+# Check record counts
+SELECT COUNT(*) FROM cars;
+SELECT COUNT(*) FROM agencies;
+SELECT COUNT(*) FROM providers;
+SELECT COUNT(*) FROM car_price;
+
+# Exit
+\q
+```
+
+Expected results: Hundreds to thousands of rows depending on your dataset.
+
+---
+
 ## Project Structure
 
 ```
@@ -399,8 +503,9 @@ lascade-machine-test/
 │   │   ├── database.py              # Database connection
 │   │   └── main.py                  # FastAPI app entry point
 │   │
-│   ├── scripts/
-│   │   └── seed_data.py             # Database seeding
+│   ├── create_tables.py             # Creates PostgreSQL tables
+│   ├── seed_data.py                 # Seeds database from car-results.json
+│   ├── car-results.json             # Source data (868+ cars)
 │   │
 │   ├── .env.example                 # Environment template
 │   ├── requirements.txt             # Python dependencies
@@ -707,15 +812,24 @@ npm test -- --coverage
 
 ## Troubleshooting
 
-### Common Backend Issues
+### Database Setup Issues
 
-**Issue: ModuleNotFoundError: No module named 'app'**
+**Issue: Tables not created**
 
 Solution:
 ```bash
 cd car-rental-backend
-source venv/bin/activate  # Make sure venv is activated
-pip install -r requirements.txt
+source venv/bin/activate
+python3 create_tables.py
+```
+
+**Issue: `relation "agencies" does not exist`**
+
+Solution:
+```bash
+# Tables weren't created before seeding
+python3 create_tables.py
+python3 seed_data.py
 ```
 
 **Issue: Database connection failed**
@@ -734,6 +848,34 @@ brew services start postgresql   # macOS
 cat .env
 ```
 
+**Issue: Connection refused (Render PostgreSQL)**
+
+Solution:
+- Verify external connections are enabled in Render dashboard
+- Check that your DATABASE_URL includes `?sslmode=require`
+- Ensure your IP is not blocked (Render allows all by default)
+
+### Seeding Issues
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| `KeyError: logo` | Some providers don't have a logo | Script uses `pr.get("logo", "")` for fallback |
+| `KeyError: fuel_policy` | Missing fuel policy in JSON | Script uses `cp.get("fuelPolicy", "Unknown")` |
+| `.env not loading` | Missing python-dotenv | Install: `pip install python-dotenv` |
+| Wrong DB URL format | Missing SSL mode for Render | Add `?sslmode=require` to URL |
+| No data after seeding | JSON file not found | Ensure `car-results.json` is in backend root |
+
+### Common Backend Issues
+
+**Issue: ModuleNotFoundError: No module named 'app'**
+
+Solution:
+```bash
+cd car-rental-backend
+source venv/bin/activate  # Make sure venv is activated
+pip install -r requirements.txt
+```
+
 **Issue: Port 8000 already in use**
 
 Solution:
@@ -748,14 +890,6 @@ taskkill /PID <PID> /F
 
 # Or use a different port
 uvicorn app.main:app --reload --port 8001
-```
-
-**Issue: "relation 'cars' does not exist"**
-
-Solution:
-```bash
-# Run seed script to create tables
-python scripts/seed_data.py
 ```
 
 ### Common Frontend Issues
@@ -805,7 +939,7 @@ rm -rf .next
 npm run build
 ```
 
-### Database Issues
+### Environment Variable Issues
 
 **Issue: No cars showing in search**
 
@@ -814,10 +948,11 @@ Solution:
 # Re-seed database
 cd car-rental-backend
 source venv/bin/activate
-python scripts/seed_data.py
+python3 create_tables.py
+python3 seed_data.py
 
 # Verify data exists
-sudo -u postgres psql -d car_rental
+psql "$DATABASE_URL"
 SELECT COUNT(*) FROM cars;
 \q
 ```
@@ -878,11 +1013,21 @@ Solution:
 ### Backend (.env)
 
 ```env
-DATABASE_URL=postgresql://user:password@host:port/database
+# Local PostgreSQL
+DATABASE_URL=postgresql://user:password@localhost:5432/car_rental
+
+# OR Render PostgreSQL
+DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
+
+# API Configuration
 API_HOST=0.0.0.0
 API_PORT=8000
 API_RELOAD=True
+
+# CORS Settings
 CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Environment
 ENVIRONMENT=development
 DEBUG=True
 ```
@@ -933,60 +1078,3 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2024 Shanavas VB
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
-
----
-
-## Authors
-
-**Shanavas VB**
-- GitHub: [@shanavasvb](https://github.com/shanavasvb)
-- Repository: [lascade-machine-test](https://github.com/shanavasvb/lascade-machine-test)
-
----
-
-## Acknowledgments
-
-- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
-- [Next.js](https://nextjs.org/) - React framework
-- [PostgreSQL](https://www.postgresql.org/) - Robust database system
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
-- All contributors who have helped improve this project
-
----
-
-## Support
-
-If you have questions or need help:
-
-- Open an [issue](https://github.com/shanavasvb/lascade-machine-test/issues)
-- Review the [Troubleshooting](#troubleshooting) section
-- Check the [API Documentation](http://localhost:8000/docs) when backend is running
-
----
-
-<div align="center">
-
-**Made with care for Lascade Machine Test**
-
-[Back to Top](#car-rental-application)
-
-</div>

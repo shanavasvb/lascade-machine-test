@@ -386,7 +386,7 @@ Before seeding data, you MUST create the database tables.
 
 ```bash
 # Make sure you're in car-rental-backend/ with venv activated
-python3 create_tables.py
+python3 -m app.scripts.create_tables
 ```
 
 Expected output:
@@ -401,7 +401,7 @@ The seed script loads **868+ cars, agencies, providers, and pricing data** from 
 
 ```bash
 # Make sure virtual environment is activated and you're in car-rental-backend/
-python3 seed_data.py
+python3 -m app.scripts.seed_data
 ```
 
 Expected output:

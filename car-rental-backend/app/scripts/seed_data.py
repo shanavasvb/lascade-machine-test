@@ -14,13 +14,11 @@ def load_json():
 def seed_database():
     data = load_json()
     results = data.get("results", [])
-
     db = SessionLocal()
-
+    
     print(f"Found {len(results)} results in JSON.")
-
+    
     for idx, item in enumerate(results):
-
         # 1. Insert Agency
         agency_data = item.get("agency", {})
         agency = Agency(
@@ -31,10 +29,9 @@ def seed_database():
         )
         db.add(agency)
         db.flush()
-
+        
         # 2. Insert Car
         car_data = item.get("car", {})
-
         car = Car(
             name=car_data.get("name"),
             category=car_data.get("category"),
@@ -48,7 +45,7 @@ def seed_database():
         )
         db.add(car)
         db.flush()
-
+        
         # 3. Insert Providers
         provider_ids = {}
         for pr in item.get("providers", []):
@@ -59,28 +56,28 @@ def seed_database():
             db.add(provider)
             db.flush()
             provider_ids[pr.get("name")] = provider.id
-
+        
         # 4. Insert CarPrice
         pickup = item.get("pickup", {})
-
+        
         for pr in item.get("providers", []):
             price_entry = CarPrice(
                 car_id=car.id,
                 agency_id=agency.id,
                 provider_id=provider_ids.get(pr.get("name")),
-                price=pr.get("price", 0),  # SAFE: default price
-                free_cancellation=pr.get("free_cancellation", False),
+                price=pr.get("price", 0),
+                free_cancellation=pr.get("is_free_cancellation", False),  # ✅ Fixed key name
                 unlimited_mileage=pr.get("unlimited_mileage", False),
                 fuel_policy=pr.get("fuel_policy"),
-                pickup_location=pickup.get("name"),
+                pickup_location=pickup.get("address"),  # ✅ FIXED: Use 'address' instead of 'name'
                 latitude=pickup.get("latitude"),
                 longitude=pickup.get("longitude")
             )
             db.add(price_entry)
-
+        
         if (idx + 1) % 50 == 0:
             print(f"Inserted {idx + 1} records...")
-
+    
     db.commit()
     db.close()
     print("Seeding completed successfully!")

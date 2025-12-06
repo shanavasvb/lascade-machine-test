@@ -120,8 +120,8 @@ async def get_cars(
                 print(f"[LOCATION] Total cars before filter: {len(all_results)}")
     
     # Filter by location
-                filtered_results = []
-                    for car, price, agency, provider in all_results:
+            filtered_results = []
+                for car, price, agency, provider in all_results:
                         try:
             # 🔍 ADD THESE DEBUG LINES
                             print(f"[DEBUG] Raw pickup data type: {type(price.pickup)}")

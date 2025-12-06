@@ -11,7 +11,9 @@ import "react-date-range/dist/theme/default.css";
 export default function SearchBar() {
   const router = useRouter();
   const [pickup, setPickup] = useState("");
+  const [pickupSearch, setPickupSearch] = useState("");
   const [dropoff, setDropoff] = useState("");
+  const [dropoffSearch, setDropoffSearch] = useState("");
   const [showDropoff, setShowDropoff] = useState(false);
   const [priceAlert, setPriceAlert] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -31,17 +33,32 @@ export default function SearchBar() {
     setEndDate(end);
   };
 
-  const handleSearch = () => {
-    if (!pickup) {
-      alert("Please enter a pickup location");
-      return;
-    }
+  const handlePickupChange = (displayValue: string, searchValue: string) => {
+    setPickup(displayValue);
+    setPickupSearch(searchValue);
+  };
 
-    const params = new URLSearchParams();
-    params.append("pickup_location", pickup);
+  const handleDropoffChange = (displayValue: string, searchValue: string) => {
+    setDropoff(displayValue);
+    setDropoffSearch(searchValue);
+  };
+const handleSearch = () => {
+  if (!pickup) {
+    alert("Please enter a pickup location");
+    return;
+  }
+
+  // ✅ ADD THESE DEBUG LOGS
+  console.log("DEBUG - pickup display:", pickup);
+  console.log("DEBUG - pickupSearch value:", pickupSearch);
+  console.log("DEBUG - Sending to API:", pickupSearch || pickup);
+
+  const params = new URLSearchParams();
+  params.append("pickup_location", pickupSearch || pickup);
+
     
     if (showDropoff && dropoff) {
-      params. append("dropoff_location", dropoff);
+      params. append("dropoff_location", dropoffSearch || dropoff);
     }
     
     if (startDate) {
@@ -56,7 +73,7 @@ export default function SearchBar() {
       params.append("alert", "true");
     }
 
-    router.push(`/search?${params.toString()}`);
+    router.push(`/search? ${params.toString()}`);
   };
 
   if (!mounted || !startDate || !endDate) {
@@ -79,21 +96,18 @@ export default function SearchBar() {
   return (
     <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg border border-gray-100">
       <div className="space-y-5">
-        {/* Pickup Location */}
         <div className="relative">
           <LocationInput
             value={pickup}
-            onChange={setPickup}
+            onChange={handlePickupChange}
             placeholder="Enter pick up location"
           />
           
-          {/* Connecting line */}
           {! showDropoff && (
             <div className="absolute left-[30px] top-[62px] w-[2px] h-[18px] bg-[var(--color-primary)]/30" />
           )}
         </div>
 
-        {/* Add Different Drop Off Button */}
         <button
           onClick={() => setShowDropoff(!showDropoff)}
           className="flex items-center gap-2 text-[15px] text-[var(--color-primary)] font-semibold hover:text-[var(--color-primary-hover)] transition-colors pl-[22px]"
@@ -120,31 +134,28 @@ export default function SearchBar() {
           {showDropoff ?  "Remove Different Drop Off" : "Add Different Drop Off"}
         </button>
 
-        {/* Dropoff Location (conditional) */}
         {showDropoff && (
           <div className="relative">
             <LocationInput
               value={dropoff}
-              onChange={setDropoff}
+              onChange={handleDropoffChange}
               placeholder="Enter drop off location"
             />
           </div>
         )}
 
-        {/* Date Range Picker - Shows both Pickup and Return dates */}
         <DateRangePicker
           startDate={startDate}
           endDate={endDate}
           onChange={handleDateChange}
         />
 
-        {/* Price Alert Checkbox */}
         <label className="flex items-center gap-3 cursor-pointer group">
           <div className="relative">
             <input
               type="checkbox"
               checked={priceAlert}
-              onChange={(e) => setPriceAlert(e. target.checked)}
+              onChange={(e) => setPriceAlert(e.target.checked)}
               className="w-5 h-5 rounded border-2 border-gray-300 checked:border-[var(--color-primary)] checked:bg-[var(--color-primary)] cursor-pointer appearance-none transition-all"
             />
             {priceAlert && (
@@ -164,7 +175,6 @@ export default function SearchBar() {
           </span>
         </label>
 
-        {/* Search Button */}
         <button
           onClick={handleSearch}
           className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] 

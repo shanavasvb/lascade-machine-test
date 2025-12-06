@@ -48,7 +48,6 @@ const handleSearch = () => {
     return;
   }
 
-  // ✅ ADD THESE DEBUG LOGS
   console.log("DEBUG - pickup display:", pickup);
   console.log("DEBUG - pickupSearch value:", pickupSearch);
   console.log("DEBUG - Sending to API:", pickupSearch || pickup);
@@ -73,7 +72,7 @@ const handleSearch = () => {
       params.append("alert", "true");
     }
 
-    router.push(`/search? ${params.toString()}`);
+    router.push(`/search?${params.toString()}`);
   };
 
   if (!mounted || !startDate || !endDate) {

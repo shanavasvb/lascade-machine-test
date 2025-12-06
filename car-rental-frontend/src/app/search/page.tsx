@@ -24,11 +24,22 @@ function SearchContent() {
   useEffect(() => {
     const pickupLocation = searchParams.get("pickup_location");
     const dropoffLocation = searchParams.get("dropoff_location");
+    const pickupDate = searchParams.get("pickup_date");
+    const dropoffDate = searchParams.get("dropoff_date");
+    
+    // ✅ DEBUG LOGGING
+    console.log("🔍 [SEARCH PAGE] URL Parameters:");
+    console.log("  - pickup_location:", pickupLocation);
+    console.log("  - dropoff_location:", dropoffLocation);
+    console.log("  - pickup_date:", pickupDate);
+    console.log("  - dropoff_date:", dropoffDate);
     
     setActiveFilters(prev => ({
       ...prev,
-      pickup_location: pickupLocation || undefined,
-      dropoff_location: dropoffLocation || undefined,
+      pickup_location: pickupLocation ? pickupLocation : undefined,
+      dropoff_location: dropoffLocation ? dropoffLocation : undefined,
+      pickup_date: pickupDate ? pickupDate : undefined,
+      dropoff_date: dropoffDate ? dropoffDate : undefined,
     }));
   }, [searchParams]);
 
@@ -37,8 +48,9 @@ function SearchContent() {
       try {
         const data = await fetchFilters();
         setFilters(data);
+        console.log("✅ [FILTERS] Loaded successfully");
       } catch (error) {
-        console.error("Failed to fetch filters:", error);
+        console.error("❌ [FILTERS] Failed to fetch:", error);
       }
     };
     loadFilters();
@@ -47,11 +59,16 @@ function SearchContent() {
   useEffect(() => {
     const loadCars = async () => {
       setLoading(true);
+      
+      // ✅ DEBUG LOGGING
+      console.log("📡 [API CALL] Calling fetchCars with filters:", activeFilters);
+      
       try {
         const data = await fetchCars(activeFilters);
         setCars(data);
+        console.log(`✅ [API RESPONSE] Received ${data.count} cars, page ${data.page}/${data.total_pages}`);
       } catch (error) {
-        console.error("Failed to fetch cars:", error);
+        console.error("❌ [API ERROR] Failed to fetch cars:", error);
       } finally {
         setLoading(false);
       }
@@ -63,15 +80,18 @@ function SearchContent() {
   }, [activeFilters, filters]);
 
   const handleFilterChange = (newFilters: SearchFilters) => {
+    console.log("🔄 [FILTER CHANGE]", newFilters);
     setActiveFilters({ ...newFilters, limit: 12 });
     setShowFilters(false); // Close filters on mobile after applying
   };
 
   const handleSortChange = (sortBy: string) => {
+    console.log("🔄 [SORT CHANGE]", sortBy);
     setActiveFilters({ ...activeFilters, sort_by: sortBy as any, page: 1 });
   };
 
   const handlePageChange = (page: number) => {
+    console.log("🔄 [PAGE CHANGE]", page);
     setActiveFilters({ ...activeFilters, page });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -139,12 +159,12 @@ function SearchContent() {
             {searchParams.get("pickup_location") && (
               <p className="text-sm sm:text-[15px] text-[var(--color-text-muted)]">
                 Pickup: {searchParams.get("pickup_location")}
-                {searchParams.get("pickup_date") && ` on ${searchParams.get("pickup_date")}`}
+                {searchParams.get("pickup_date") && ` on ${searchParams. get("pickup_date")}`}
               </p>
             )}
             {searchParams.get("dropoff_location") && (
               <p className="text-sm sm:text-[15px] text-[var(--color-text-muted)]">
-                Dropoff: {searchParams.get("dropoff_location")}
+                Dropoff: {searchParams. get("dropoff_location")}
                 {searchParams.get("dropoff_date") && ` on ${searchParams.get("dropoff_date")}`}
               </p>
             )}
@@ -233,11 +253,11 @@ function SearchContent() {
               onSortChange={handleSortChange}
             />
 
-            {cars && cars. results.length > 0 ?  (
+            {cars && cars.results.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                   {cars.results.map((car, index) => (
-                    <CarCard key={`${car.car.id}-${car.agency.name}-${car.price}-${index}`} car={car} />
+                    <CarCard key={`${car.car. id}-${car.agency.name}-${car.price}-${index}`} car={car} />
                   ))}
                 </div>
 
@@ -253,13 +273,16 @@ function SearchContent() {
               <div className="bg-white rounded-[20px] shadow-[var(--shadow-card)] p-6 sm:p-12 text-center">
                 <div className="text-5xl sm:text-6xl mb-4">🚗</div>
                 <h3 className="text-xl sm:text-[24px] font-bold text-[var(--color-text-main)] mb-2">
-                  No cars found in this location
+                  No cars found
                 </h3>
                 <p className="text-sm sm:text-base text-[var(--color-text-muted)] mb-6 max-w-md mx-auto">
-                  We couldnot find any cars in {searchParams. get("pickup_location") || "this location"}. Try a different location or adjust your filters.
+                  {searchParams.get("pickup_location") 
+                    ? `We couldn't find any cars matching "${searchParams.get("pickup_location")}". Try a different location or adjust your filters.`
+                    : "Try adjusting your search filters to see more results."
+                  }
                 </p>
                 <button
-                  onClick={() => window.location. href = '/'}
+                  onClick={() => window.location.href = '/'}
                   className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white font-semibold px-6 sm:px-8 py-2. 5 sm:py-3 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95 text-sm sm:text-base"
                 >
                   Search Again

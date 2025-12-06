@@ -3,7 +3,7 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Python](https://img.shields.io/badge/python-3.10--3.12-blue.svg)
 ![Next.js](https://img.shields.io/badge/next.js-16-black.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-latest-009688.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)
@@ -106,7 +106,7 @@ This car rental application provides a seamless experience for users to find and
 | **SQLAlchemy** | ORM | 2.0+ |
 | **Uvicorn** | ASGI server | Latest |
 | **Pydantic** | Data validation | 2.0+ |
-| **Python** | Programming language | 3.10+ |
+| **Python** | Programming language | 3.10-3.12 (recommended) |
 
 ### Frontend
 
@@ -128,10 +128,14 @@ Before you begin, ensure your system meets the following requirements:
 
 ### Required Software
 
-**1. Python 3.10 or higher**
+**1. Python 3.10 to 3.12 (recommended)**
+
+> ⚠️ **Important:** Python 3.13 is NOT recommended due to compatibility issues with some dependencies. Use Python 3.10, 3.11, or 3.12 for best results.
+
 ```bash
-python3 --version  # Should output 3.10.x or higher
+python3 --version  # Should output 3.10.x to 3.12.x
 ```
+
 Download: [python.org/downloads](https://www.python.org/downloads/)
 
 **2. Node.js 18 or higher with npm**
@@ -188,10 +192,67 @@ venv\Scripts\activate
 
 # You should see (venv) in your terminal
 
-# Upgrade pip and install dependencies
+# Upgrade pip
 pip install --upgrade pip
+```
+
+#### Install Dependencies
+
+**For Python 3.10-3.12 (Recommended):**
+
+```bash
 pip install -r requirements.txt
 ```
+
+**For Python 3.13 (if you encounter build errors):**
+
+If you see errors like `Failed building wheel for psycopg2-binary` or `Failed building wheel for pydantic-core`, use this method:
+
+```bash
+# Install system dependencies first
+
+# For Linux (Debian/Ubuntu):
+sudo apt-get update
+sudo apt-get install libpq-dev python3-dev build-essential
+
+# For macOS:
+brew install postgresql
+
+# Install Python packages with compatible versions
+pip install fastapi uvicorn[standard] sqlalchemy python-dotenv
+pip install psycopg2-binary==2.9.10
+pip install pydantic==2.10.3
+
+# Verify installation
+python3 -c "import fastapi, uvicorn, sqlalchemy, psycopg2, pydantic; print('✅ All packages installed successfully')"
+```
+
+**Alternative: Use Docker (Recommended for Python 3.13)**
+
+If you continue to face installation issues:
+
+```bash
+# Make sure Docker is installed
+docker --version
+
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+> **💡 Pro Tip:** If you're using Python 3.13, we strongly recommend using **Python 3.11 or 3.12** for better compatibility. You can install multiple Python versions and create a venv with a specific version:
+>
+> ```bash
+> # Install Python 3.11 (Ubuntu/Debian)
+> sudo apt-get install python3.11 python3.11-venv
+>
+> # Install Python 3.11 (macOS)
+> brew install python@3.11
+>
+> # Create venv with Python 3.11
+> python3.11 -m venv venv
+> source venv/bin/activate
+> pip install -r requirements.txt
+> ```
 
 ### Step 3: Frontend Setup
 
@@ -436,381 +497,71 @@ You should see the car rental homepage with a search form ready to use!
 
 ---
 
-## Verifying Database Setup
-
-After seeding, verify the data was loaded correctly:
-
-### For Local PostgreSQL:
-```bash
-sudo -u postgres psql -d car_rental
-
-# Check record counts
-SELECT COUNT(*) FROM cars;
-SELECT COUNT(*) FROM agencies;
-SELECT COUNT(*) FROM providers;
-SELECT COUNT(*) FROM car_price;
-
-# Exit
-\q
-```
-
-### For Render PostgreSQL:
-```bash
-psql "$DATABASE_URL"
-
-# Check record counts
-SELECT COUNT(*) FROM cars;
-SELECT COUNT(*) FROM agencies;
-SELECT COUNT(*) FROM providers;
-SELECT COUNT(*) FROM car_price;
-
-# Exit
-\q
-```
-
-Expected results: Hundreds to thousands of rows depending on your dataset.
-
----
-
-## Project Structure
-
-```
-lascade-machine-test/
-│
-├── car-rental-backend/              # FastAPI Backend
-│   ├── app/
-│   │   ├── models/                  # SQLAlchemy Models
-│   │   │   ├── __init__.py
-│   │   │   ├── car.py              # Car model
-│   │   │   ├── agency.py           # Rental agency model
-│   │   │   ├── provider.py         # Provider model
-│   │   │   └── price.py            # Pricing model
-│   │   │
-│   │   ├── routers/                 # API Endpoints
-│   │   │   ├── __init__.py
-│   │   │   ├── cars.py             # Car search & CRUD
-│   │   │   └── filters.py          # Filter options
-│   │   │
-│   │   ├── schemas/                 # Pydantic Schemas
-│   │   │   ├── __init__.py
-│   │   │   ├── car.py
-│   │   │   └── filters.py
-│   │   │
-│   │   ├── services/                # Business logic layer
-│   │   │   ├── __init__.py
-│   │   │   └── car_service.py
-│   │   │
-│   │   ├── database.py              # Database connection
-│   │   └── main.py                  # FastAPI app entry point
-│   │
-│   ├── create_tables.py             # Creates PostgreSQL tables
-│   ├── seed_data.py                 # Seeds database from car-results.json
-│   ├── car-results.json             # Source data (868+ cars)
-│   │
-│   ├── .env.example                 # Environment template
-│   ├── requirements.txt             # Python dependencies
-│   ├── .gitignore
-│   └── README.md
-│
-├── car-rental-frontend/             # Next.js Frontend
-│   ├── public/                      # Static assets
-│   │   ├── icons/
-│   │   └── images/
-│   │       ├── background.png
-│   │       └── phone-mockups.png
-│   │
-│   ├── src/
-│   │   ├── app/                     # Next.js App Router
-│   │   │   ├── css/
-│   │   │   │   └── calender-custom.css
-│   │   │   ├── layout.tsx           # Root layout
-│   │   │   ├── page.tsx             # Home page
-│   │   │   ├── globals.css          # Global styles
-│   │   │   ├── search/
-│   │   │   │   └── page.tsx         # Search results page
-│   │   │   └── payment/
-│   │   │       └── page.tsx         # Payment page
-│   │   │
-│   │   ├── components/              # React Components
-│   │   │   ├── hero/
-│   │   │   │   └── hero.tsx         # Hero section with search
-│   │   │   ├── navbar/
-│   │   │   │   └── navbar.tsx       # Navigation bar
-│   │   │   ├── footer/
-│   │   │   │   └── footer.tsx       # Footer component
-│   │   │   ├── search/              # Search-related components
-│   │   │   │   ├── SearchBar.tsx
-│   │   │   │   ├── FilterSidebar.tsx
-│   │   │   │   ├── CarCard.tsx
-│   │   │   │   ├── SortBar.tsx
-│   │   │   │   ├── Pagination.tsx
-│   │   │   │   ├── LocationInput.tsx
-│   │   │   │   ├── CalenderInput.tsx
-│   │   │   │   └── date-range-picker.tsx
-│   │   │   ├── brands/
-│   │   │   │   └── BrandStrip.tsx
-│   │   │   ├── places/
-│   │   │   │   ├── PlacesCard.tsx
-│   │   │   │   └── PlacesGrid.tsx
-│   │   │   ├── guides/
-│   │   │   │   ├── GuideCard.tsx
-│   │   │   │   └── TravelGuide.tsx
-│   │   │   └── apppromo/
-│   │   │       └── Apppromo.tsx
-│   │   │
-│   │   ├── lib/                     # Utility functions
-│   │   │   └── search-api.ts        # API client functions
-│   │   │
-│   │   ├── types/                   # TypeScript type definitions
-│   │   │   └── search.ts            # Search-related types
-│   │   │
-│   │   └── data/                    # Static data
-│   │       ├── data.ts              # App data
-│   │       └── location.ts          # Location data
-│   │
-│   ├── .env.example                 # Environment template
-│   ├── .env.local                   # Local environment (gitignored)
-│   ├── package.json                 # Node dependencies
-│   ├── tsconfig.json                # TypeScript config
-│   ├── tailwind.config.ts           # Tailwind config
-│   ├── next.config.ts               # Next.js config
-│   ├── .gitignore
-│   └── README.md
-│
-├── docs/                            # Documentation
-│   └── home-page-ui.md
-│
-├── .gitignore                       # Root gitignore
-├── LICENSE                          # MIT License
-└── README.md                        # This file
-```
-
----
-
-## API Documentation
-
-### Interactive Documentation
-
-Once the backend is running, access the interactive API documentation:
-
-- **Swagger UI**: http://localhost:8000/docs (recommended)
-- **ReDoc**: http://localhost:8000/redoc
-
-### Main Endpoints
-
-#### Health Check
-```http
-GET /
-```
-Returns API status and version information.
-
-**Example Response:**
-```json
-{
-  "message": "Car Rental API",
-  "status": "running"
-}
-```
-
-#### Search Cars
-```http
-GET /cars/
-```
-
-**Query Parameters:**
-
-| Parameter | Type | Description | Example |
-|-----------|------|-------------|---------|
-| `pickup_location` | string | Search by location | `Las Vegas` |
-| `pickup_date` | string | Pickup date (ISO 8601) | `2024-12-15` |
-| `dropoff_date` | string | Drop-off date (ISO 8601) | `2024-12-20` |
-| `min_price` | float | Minimum price per day | `50.00` |
-| `max_price` | float | Maximum price per day | `150.00` |
-| `car_type` | string | Type of car | `SUV`, `Sedan`, `Compact` |
-| `fuel_type` | string | Fuel type | `Petrol`, `Diesel`, `Electric` |
-| `category` | string | Car category | `Economy`, `Luxury`, `Premium` |
-| `agency` | string | Rental agency name | `Enterprise`, `Hertz` |
-| `free_cancellation` | boolean | Free cancellation option | `true`, `false` |
-| `unlimited_mileage` | boolean | Unlimited mileage option | `true`, `false` |
-| `sort_by` | string | Sort results | `price_asc`, `price_desc` |
-| `page` | integer | Page number | `1` |
-| `limit` | integer | Results per page (max 100) | `20` |
-
-**Example Requests:**
-```bash
-# Get all cars
-curl http://localhost:8000/cars/
-
-# Search by location
-curl "http://localhost:8000/cars/?pickup_location=Las%20Vegas"
-
-# Filter by car type and price range
-curl "http://localhost:8000/cars/?car_type=SUV&min_price=50&max_price=150"
-
-# Sort by price (lowest first)
-curl "http://localhost:8000/cars/?sort_by=price_asc"
-
-# Filter with multiple criteria
-curl "http://localhost:8000/cars/?pickup_location=Las%20Vegas&car_type=Sedan&free_cancellation=true&unlimited_mileage=true"
-```
-
-**Example Response:**
-```json
-{
-  "total": 25,
-  "page": 1,
-  "limit": 20,
-  "cars": [
-    {
-      "id": 1,
-      "name": "Toyota RAV4",
-      "type": "SUV",
-      "category": "Premium",
-      "fuel": "Petrol",
-      "transmission": "Automatic",
-      "passengers": 5,
-      "bags": 3,
-      "image": "https://example.com/rav4.jpg",
-      "price": 85.00,
-      "agency": {
-        "name": "Enterprise",
-        "code": "ENT",
-        "rating": 4.5
-      },
-      "provider": {
-        "name": "CarTrawler",
-        "logo": "https://example.com/cartrawler.png"
-      },
-      "pickup_location": "Las Vegas Airport",
-      "latitude": 36.0840,
-      "longitude": -115.1537,
-      "fuel_policy": "Full to Full",
-      "free_cancellation": true,
-      "unlimited_mileage": true
-    }
-  ]
-}
-```
-
-#### Get Car Details
-```http
-GET /cars/{car_id}
-```
-
-Returns detailed information about a specific car.
-
-**Example Request:**
-```bash
-curl http://localhost:8000/cars/1
-```
-
-#### Get Filter Options
-```http
-GET /filters/
-```
-
-Returns all available filter options for the search.
-
-**Example Request:**
-```bash
-curl http://localhost:8000/filters/
-```
-
-**Example Response:**
-```json
-{
-  "car_types": ["SUV", "Sedan", "Compact", "Luxury", "Convertible"],
-  "fuel_types": ["Petrol", "Diesel", "Electric", "Hybrid"],
-  "categories": ["Economy", "Premium", "Luxury", "Standard"],
-  "agencies": ["Enterprise", "Hertz", "Avis", "Budget"],
-  "price_range": {
-    "min": 25.00,
-    "max": 500.00
-  }
-}
-```
-
----
-
-## Testing
-
-### Testing the Application
-
-**1. Access the Application**
-
-Open your browser and navigate to:
-```
-http://localhost:3000
-```
-
-**2. Test Search Functionality**
-
-- Enter pickup location (e.g., "Las Vegas Airport")
-- Select pickup date from the calendar
-- Enter dropoff location (can be same as pickup)
-- Select dropoff date
-- Click "Search" button
-
-**3. Test Filters**
-
-On the search results page, try:
-- Filter by car type (Sedan, SUV, etc.)
-- Filter by category (Economy, Luxury, etc.)
-- Filter by fuel type
-- Filter by agency
-- Toggle free cancellation
-- Toggle unlimited mileage
-- Apply price range filter
-
-**4. Test API Endpoints**
-
-```bash
-# Test root endpoint
-curl http://localhost:8000/
-
-# Test cars endpoint
-curl http://localhost:8000/cars/
-
-# Test filters endpoint
-curl http://localhost:8000/filters/
-
-# Test with query parameters
-curl "http://localhost:8000/cars/?pickup_location=Las%20Vegas&min_price=50&max_price=100"
-```
-
-### Automated Tests
-
-#### Backend Tests
-
-```bash
-cd car-rental-backend
-source venv/bin/activate
-
-# Install test dependencies
-pip install pytest pytest-cov
-
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=app tests/
-```
-
-#### Frontend Tests
-
-```bash
-cd car-rental-frontend
-
-# Run tests (when implemented)
-npm test
-
-# Run with coverage
-npm test -- --coverage
-```
-
----
-
 ## Troubleshooting
+
+### Python 3.13 Compatibility Issues
+
+**Issue: `Failed building wheel for psycopg2-binary` or `Failed building wheel for pydantic-core`**
+
+**Cause:** Python 3.13 is very new and some packages haven't released pre-built wheels for it yet.
+
+**Solution 1: Install system dependencies and use compatible versions**
+
+```bash
+# Linux (Debian/Ubuntu)
+sudo apt-get update
+sudo apt-get install libpq-dev python3-dev build-essential
+
+# macOS
+brew install postgresql
+
+# Then install packages with specific versions
+pip install fastapi uvicorn[standard] sqlalchemy python-dotenv
+pip install psycopg2-binary==2.9.10
+pip install pydantic==2.10.3
+```
+
+**Solution 2: Use Python 3.11 or 3.12 (Recommended) ⭐**
+
+```bash
+# Check available Python versions
+ls /usr/bin/python3*
+
+# Install Python 3.11 or 3.12
+# Ubuntu/Debian:
+sudo apt-get install python3.11 python3.11-venv
+
+# macOS (using Homebrew):
+brew install python@3.11
+
+# Recreate venv with compatible Python version
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**Solution 3: Use Docker**
+
+```bash
+# Make sure Docker is installed
+docker --version
+
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+**Solution 4: Use Render's deployed backend**
+
+If local setup continues to fail, you can use the deployed backend API on Render and only run the frontend locally:
+
+```bash
+# In car-rental-frontend/.env.local
+NEXT_PUBLIC_API_URL=https://your-backend-url.onrender.com
+
+# Then start only the frontend
+cd car-rental-frontend
+npm run dev
+```
 
 ### Database Setup Issues
 
@@ -892,6 +643,16 @@ taskkill /PID <PID> /F
 uvicorn app.main:app --reload --port 8001
 ```
 
+**Issue: ImportError or dependency conflicts**
+
+Solution:
+```bash
+# Clear pip cache and reinstall
+pip cache purge
+pip uninstall -r requirements.txt -y
+pip install -r requirements.txt
+```
+
 ### Common Frontend Issues
 
 **Issue: Cannot connect to backend API**
@@ -967,77 +728,14 @@ Solution:
 
 ---
 
-## Database Schema
+## Python Version Compatibility Matrix
 
-### Cars Table
-- `id`: Primary Key
-- `name`: Car model name
-- `type`: Car type (Sedan, SUV, etc.)
-- `category`: Category (Economy, Luxury, etc.)
-- `fuel`: Fuel type
-- `transmission`: Transmission type
-- `passengers`: Number of passengers
-- `bags`: Luggage capacity
-- `image`: Car image URL
-- `sipp`: SIPP code
-
-### Agencies Table
-- `id`: Primary Key
-- `name`: Agency name
-- `code`: Agency code
-- `logo`: Logo URL
-- `rating`: Agency rating
-
-### Providers Table
-- `id`: Primary Key
-- `name`: Provider name
-- `logo`: Logo URL
-
-### Car Prices Table
-- `id`: Primary Key
-- `car_id`: Foreign Key → Cars
-- `agency_id`: Foreign Key → Agencies
-- `provider_id`: Foreign Key → Providers
-- `price`: Rental price
-- `pickup_location`: Pickup location
-- `latitude`: Location latitude
-- `longitude`: Location longitude
-- `fuel_policy`: Fuel policy
-- `free_cancellation`: Boolean
-- `unlimited_mileage`: Boolean
-
----
-
-## Environment Variables Reference
-
-### Backend (.env)
-
-```env
-# Local PostgreSQL
-DATABASE_URL=postgresql://user:password@localhost:5432/car_rental
-
-# OR Render PostgreSQL
-DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
-
-# API Configuration
-API_HOST=0.0.0.0
-API_PORT=8000
-API_RELOAD=True
-
-# CORS Settings
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-
-# Environment
-ENVIRONMENT=development
-DEBUG=True
-```
-
-### Frontend (.env.local)
-
-```env
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
-NEXT_PUBLIC_ENV=development
-```
+| Python Version | Status | Notes |
+|---------------|--------|-------|
+| 3.10.x | ✅ Fully Supported | Recommended |
+| 3.11.x | ✅ Fully Supported | Recommended |
+| 3.12.x | ✅ Fully Supported | Recommended |
+| 3.13.x | ⚠️ Limited Support | Some dependencies may require manual compilation |
 
 ---
 
@@ -1078,3 +776,33 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Support
+
+If you encounter any issues not covered in the troubleshooting section:
+
+1. Check existing [GitHub Issues](https://github.com/shanavasvb/lascade-machine-test/issues)
+2. Create a new issue with:
+   - Your Python version (`python3 --version`)
+   - Your OS and version
+   - Complete error message
+   - Steps to reproduce
+
+---
+
+## Acknowledgments
+
+- FastAPI for the excellent Python web framework
+- Next.js team for the powerful React framework
+- All contributors and users of this project
+
+---
+
+<div align="center">
+Made with ❤️ by Shanavasvb
+</div>

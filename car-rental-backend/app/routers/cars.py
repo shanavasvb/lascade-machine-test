@@ -115,33 +115,33 @@ async def get_cars(
             print(f"[LOCATION] Extracted keywords: {search_keywords}")
             
             if search_keywords:
-    # Fetch all results
+                # Fetch all results
                 all_results = query.all()
                 print(f"[LOCATION] Total cars before filter: {len(all_results)}")
-    
-    # Filter by location
-            filtered_results = []
+                
+                # Filter by location
+                filtered_results = []
                 for car, price, agency, provider in all_results:
-                        try:
-            # 🔍 ADD THESE DEBUG LINES
-                            print(f"[DEBUG] Raw pickup data type: {type(price.pickup)}")
-                            print(f"[DEBUG] Raw pickup data: {price.pickup}")
-            
-                            pickup_address = extract_address_from_pickup(price.pickup)
-                            print(f"[DEBUG] Extracted address: '{pickup_address}'")
-                            print(f"[DEBUG] Checking keywords: {search_keywords}")
-            
-                            if matches_location(pickup_address, search_keywords):
+                    try:
+                        # 🔍 ADD THESE DEBUG LINES
+                        print(f"[DEBUG] Raw pickup data type: {type(price.pickup)}")
+                        print(f"[DEBUG] Raw pickup data: {price.pickup}")
+                        
+                        pickup_address = extract_address_from_pickup(price.pickup)
+                        print(f"[DEBUG] Extracted address: '{pickup_address}'")
+                        print(f"[DEBUG] Checking keywords: {search_keywords}")
+                        
+                        if matches_location(pickup_address, search_keywords):
                             filtered_results.append((car, price, agency, provider))
                             print(f"[MATCH] '{pickup_address}'")
-            else:
-                print(f"[NO MATCH] '{pickup_address}'")
-        
-                        except Exception as e:
-                                print(f"[ERROR] Processing car {car.id}: {str(e)}")
-                                import traceback
-                                traceback.print_exc()
-                                continue 
+                        else:
+                            print(f"[NO MATCH] '{pickup_address}'")
+                    
+                    except Exception as e:
+                        print(f"[ERROR] Processing car {car.id}: {str(e)}")
+                        import traceback
+                        traceback.print_exc()
+                        continue 
                 
                 print(f"[LOCATION] Found {len(filtered_results)} matching cars")
                 results = filtered_results
